@@ -234,6 +234,7 @@ const Sfx = {
       if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
       for (const it of this.items) this.decode(it);
     } catch (e) { /* ignore */ }
+    Bgm.unlock();
   },
   play(ev) {
     if (ev === 'muerte' || ev === 'clear') { this.burst = Object.create(null); this.burst[ev] = true; this.queue = []; this.stop(); return; }
@@ -270,7 +271,52 @@ const Sfx = {
     src.onended = done; setTimeout(done, Math.ceil((buf.duration || 0.45) * 1000) + 40);
     try { src.start(); } catch { done(); }
   },
-  setMuted(m) { this.muted = m; store.set('lhda_mute', m ? '1' : '0'); if (m) { this.queue = []; this.stop(); } syncMuteIcon(); },
+  setMuted(m) { this.muted = m; store.set('lhda_mute', m ? '1' : '0'); if (m) { this.queue = []; this.stop(); Bgm.pause(); } else { if (!Bgm.muted) Bgm.play(); } syncMuteIcon(); },
+
+/* ---------------- bgm (ready for 8-bit chiptune soundtrack) ---------------- */
+const Bgm = {
+  audio: null,
+  src: 'bgm_8bit.mp3', // Placeholder / slot for the 8-bit track provided later
+  muted: store.get('lhda_bgm_mute') === '1',
+  volume: 0.35,
+  unlocked: false,
+  init() {
+    if (this.audio) return;
+    try {
+      this.audio = new Audio();
+      this.audio.loop = true;
+      this.audio.volume = this.volume;
+      this.audio.src = this.src;
+      this.audio.addEventListener('error', () => { /* song not yet present: silent fallback */ });
+    } catch (e) {}
+  },
+  unlock() {
+    this.unlocked = true;
+    this.init();
+    if (!this.muted && !Sfx.muted) {
+      this.play();
+    }
+  },
+  play() {
+    if (this.muted || Sfx.muted) return;
+    this.init();
+    if (this.audio && this.audio.src) {
+      this.audio.play().catch(() => {});
+    }
+  },
+  pause() {
+    if (this.audio) {
+      try { this.audio.pause(); } catch (e) {}
+    }
+  },
+  setMuted(m) {
+    this.muted = m;
+    store.set('lhda_bgm_mute', m ? '1' : '0');
+    if (m) this.pause();
+    else if (this.unlocked && !Sfx.muted) this.play();
+  }
+};
+
 };
 
 /* ---------------- images ---------------- */
@@ -1034,11 +1080,29 @@ function frame(ts) {
   try { syncHud(false); Sfx.flush(); } catch (e) { report(e); }
 }
 
+
+async function tryLoadExternalLevels() {
+  try {
+    const res = await fetch('levels.json');
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        LEVELS.length = 0;
+        for (const l of data) LEVELS.push(l);
+        if (state === 'menu' && !playing) buildLevel(0);
+      }
+    }
+  } catch (e) {
+    // Falls back gracefully to embedded LEVELS
+  }
+}
+
 syncMuteIcon();
 layout(true);
 buildLevel(0);
 renderMenu();
 Sfx.load();
+tryLoadExternalLevels();
 if (!MANUAL) requestAnimationFrame(frame);
 
 if (DEBUG) window.__lhda = { ev: (s) => eval(s), errors };
