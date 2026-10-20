@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "LHDA-BALL",
+      "hasCanvas": true,
+      "bodyTextLen": 59,
+      "bodyTextHash": "07d1d2dc9cc826cc283043c57692c8b78ffab11a889a37030c9bedb5b153112a",
+      "bodyTextPrefix": "LHDA-BALL Poné tu nombre para la tabla y el ranking. ENTRAR",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "LHDA-BALL",
+      "hasCanvas": true,
+      "bodyTextLen": 59,
+      "bodyTextHash": "07d1d2dc9cc826cc283043c57692c8b78ffab11a889a37030c9bedb5b153112a",
+      "bodyTextPrefix": "LHDA-BALL Poné tu nombre para la tabla y el ranking. ENTRAR",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}

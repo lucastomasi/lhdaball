@@ -1,0 +1,44 @@
+{
+  "events": {
+    "pala": [
+      "robot_ave.wav"
+    ],
+    "ladrillo": [
+      "robot_ponzi.wav"
+    ],
+    "rompe": [
+      "robot_palan.wav"
+    ],
+    "jijo": [
+      "jijo.wav"
+    ],
+    "power": [
+      "power_gracias.wav",
+      "power_gracias_b.wav",
+      "power_por_la.wav",
+      "power_donacion.wav"
+    ],
+    "muerte": [
+      "robot_bueno.wav"
+    ],
+    "clear": [
+      "robot_gracias.wav"
+    ]
+  },
+  "source": "Una sola toma, voz rex, es. Ave, Pálan, Pónzi, Bueno, Jíjo, Gracias, Por la y Donación con el mismo timbre.",
+  "notes": {
+    "missing_spoken_in_VODs": [
+      "ave",
+      "palan/Palán",
+      "ponzi"
+    ],
+    "branding_source": "Los_Herederos_son_mi_religion.m4a — chorus whisper-aligned as 'A ver, Paladri, a ver, Ponzi' (= Ave Palandri / Ave Ponzi branding). Not spoken in stream VOD whisper JSONs (gE3vyGUMLhA full + U8 partial/VTT).",
+    "ave_timestamps": "herederos A+ver @27.48-28.00, 53.36-53.56, 78.14-78.32, 102.76-102.95",
+    "palan_timestamps": "herederos Paladri @28.10-28.52, 53.66-54.06, 78.42-78.80, 103.06-103.46",
+    "ponzi_timestamps": "herederos Ponzi @28.96-29.26, 54.50-54.80, 79.26-79.56, 103.90-104.20",
+    "muerte_note": "Retargeted to bueno clips (copies of clear_bueno*). Prior muerte_hasta* retired from catalog.",
+    "ladrillo_split": "ladrillo = touch/non-destroy (ponzi); rompe = destroy (palan).",
+    "removed_from_events": "pala_buenas/noches/familia*; ladrillo_ja*; muerte_hasta* removed from event slots 2026-10-01",
+    "tight_2026_10_01b": "Keyword-only hard windows, 8ms pad, 50ms fades, peak -1dB from herederos branding track."
+  }
+}

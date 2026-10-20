@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LHDA-BALL · Voces</title>
+<style>
+  :root {
+    --bg: #05070d;
+    --panel: #0d1830;
+    --navy: #1a2744;
+    --gold: #e8c547;
+    --white: #e8eef7;
+    --muted: #a8b4c8;
+    --hit: #2ecc71;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "Liberation Sans", system-ui, sans-serif;
+    background: #05070d;
+    color: var(--white);
+    padding: 24px 16px 48px;
+  }
+  h1 { margin: 0 0 4px; font-size: 1.35rem; letter-spacing: 0.04em; }
+  h1 span { color: var(--gold); }
+  .sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 20px; line-height: 1.45; }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 22px; }
+  .toolbar button, .toolbar a {
+    background: var(--navy);
+    color: var(--white);
+    border: 1px solid #2a3a5c;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: none;
+    min-height: 44px;
+  }
+  .toolbar button:hover, .toolbar a:hover { border-color: var(--gold); color: var(--gold); }
+  .vol { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 0.85rem; }
+  .vol input { width: 120px; accent-color: var(--gold); }
+  section {
+    background: var(--panel);
+    border: 1px solid #1e2a40;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  section h2 {
+    margin: 0 0 12px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--gold);
+  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+  .pad {
+    appearance: none;
+    background: #122040;
+    border: 1px solid #2a3a5c;
+    border-radius: 12px;
+    padding: 14px 10px 12px;
+    color: var(--white);
+    cursor: pointer;
+    text-align: center;
+    min-height: 72px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+  }
+  .pad:hover { border-color: var(--gold); }
+  .pad.playing { border-color: var(--hit); }
+  .pad .label { font-weight: 650; font-size: 0.95rem; }
+  .pad .meta { font-size: 0.7rem; color: var(--muted); word-break: break-all; }
+  a { color: var(--gold); }
+</style>
+</head>
+<body>
+  <h1>LHDA-BALL · <span>Voces</span></h1>
+  <p class="sub">Las voces del juego, una por pad. La rotación del partido usa el catálogo. Abajo quedan los clips que sacaste de la rotación.</p>
+  <div class="toolbar">
+    <a href="/">← Juego</a>
+    <button type="button" id="btn-stop">Parar todo</button>
+    <button type="button" id="btn-seq">Secuencia</button>
+    <label class="vol">Vol <input type="range" id="vol" min="0" max="1" step="0.05" value="0.85" /></label>
+  </div>
+  <div id="boards"></div>
+<script>
+const GROUPS = [
+  { title: "Pala · Ave", clips: [["Ave","pala_ave.wav"],["Ave B","pala_ave_b.wav"],["Ave C","pala_ave_c.wav"],["Ave D","pala_ave_d.wav"]] },
+  { title: "Ladrillo · Palán", clips: [["Palán","ladrillo_palan.wav"],["Palán B","ladrillo_palan_b.wav"],["Palán C","ladrillo_palan_c.wav"],["Palán D","ladrillo_palan_d.wav"]] },
+  { title: "Rompe · Ponzi", clips: [["Ponzi","ladrillo_ponzi.wav"],["Ponzi B","ladrillo_ponzi_b.wav"],["Ponzi C","ladrillo_ponzi_c.wav"],["Ponzi D","ladrillo_ponzi_d.wav"]] },
+  { title: "Power", clips: [["Gracias","power_gracias.wav"],["Gracias B","power_gracias_b.wav"],["Por la","power_por_la.wav"],["Donación","power_donacion.wav"]] },
+  { title: "Nivel · Bueno", clips: [["Bueno","clear_bueno.wav"],["Bueno B","clear_bueno_b.wav"],["Bueno C","clear_bueno_c.wav"],["Bueno D","clear_bueno_d.wav"]] },
+  { title: "Muerte · Bueno", clips: [["Bueno","muerte_bueno.wav"],["Bueno B","muerte_bueno_b.wav"],["Bueno C","muerte_bueno_c.wav"],["Bueno D","muerte_bueno_d.wav"]] },
+  { title: "Fuera de rotación", clips: [["Familia","pala_familia.wav"],["Familia B","pala_familia_b.wav"],["Buenas","pala_buenas.wav"],["Noches","pala_noches.wav"],["Ja","ladrillo_ja.wav"],["Ja ja","ladrillo_ja_ja.wav"],["Jaja","ladrillo_jaja.wav"],["Hasta","muerte_hasta.wav"],["Hasta B","muerte_hasta_b.wav"]] },
+];
+const boards = document.getElementById("boards");
+const volEl = document.getElementById("vol");
+let current = [];
+function stopAll() {
+  current.forEach((a) => { try { a.pause(); a.currentTime = 0; } catch (_) {} });
+  current = [];
+  document.querySelectorAll(".pad.playing").forEach((el) => el.classList.remove("playing"));
+}
+function playFile(file, padEl) {
+  const a = new Audio("/dxball/sfx/" + file);
+  a.volume = Number(volEl.value);
+  current.push(a);
+  if (padEl) padEl.classList.add("playing");
+  a.addEventListener("ended", () => {
+    if (padEl) padEl.classList.remove("playing");
+    current = current.filter((x) => x !== a);
+  });
+  a.play().catch(() => {});
+  return a;
+}
+GROUPS.forEach((g) => {
+  const sec = document.createElement("section");
+  sec.innerHTML = `<h2>${g.title}</h2>`;
+  const grid = document.createElement("div");
+  grid.className = "grid";
+  g.clips.forEach(([label, file]) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "pad";
+    btn.dataset.file = file;
+    btn.innerHTML = `<span class="label">${label}</span><span class="meta">${file.replace(/\.wav$/, "")}</span>`;
+    btn.addEventListener("click", () => playFile(file, btn));
+    grid.appendChild(btn);
+  });
+  sec.appendChild(grid);
+  boards.appendChild(sec);
+});
+document.getElementById("btn-stop").addEventListener("click", stopAll);
+document.getElementById("btn-seq").addEventListener("click", async () => {
+  stopAll();
+  for (const file of ["pala_ave.wav","ladrillo_palan.wav","ladrillo_ponzi.wav","power_gracias.wav","clear_bueno.wav"]) {
+    const pad = document.querySelector(`.pad[data-file="${file}"]`);
+    const a = playFile(file, pad);
+    await new Promise((r) => a.addEventListener("ended", r, { once: true }));
+  }
+});
+</script>
+</body>
+</html>
