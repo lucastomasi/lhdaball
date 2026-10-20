@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DX-Ball · Botonera SFX Palandri</title>
+<style>
+  :root {
+    --bg: #0a0e18;
+    --panel: #121826;
+    --navy: #1a2744;
+    --gold: #e8c547;
+    --white: #f2f4f8;
+    --muted: #8b95a8;
+    --hit: #2ecc71;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: radial-gradient(ellipse at top, #152038 0%, var(--bg) 55%);
+    color: var(--white);
+    padding: 24px 16px 48px;
+  }
+  h1 {
+    margin: 0 0 4px;
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  h1 span { color: var(--gold); }
+  .sub {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+  }
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 22px;
+  }
+  .toolbar button {
+    background: var(--navy);
+    color: var(--white);
+    border: 1px solid #2a3a5c;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+  .toolbar button:hover { border-color: var(--gold); color: var(--gold); }
+  .toolbar button.danger:hover { border-color: #e74c3c; color: #e74c3c; }
+  .vol {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  .vol input { width: 120px; accent-color: var(--gold); }
+  section {
+    background: var(--panel);
+    border: 1px solid #1e2a40;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  section h2 {
+    margin: 0 0 12px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--gold);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+  }
+  .pad {
+    appearance: none;
+    background: linear-gradient(180deg, #1c2740 0%, #141c2e 100%);
+    border: 1px solid #2a3a5c;
+    border-radius: 12px;
+    padding: 14px 10px 12px;
+    color: var(--white);
+    cursor: pointer;
+    text-align: center;
+    transition: transform 0.08s, border-color 0.15s, box-shadow 0.15s;
+    min-height: 72px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+  }
+  .pad:hover { border-color: var(--gold); }
+  .pad:active, .pad.playing {
+    transform: scale(0.97);
+    border-color: var(--hit);
+    box-shadow: 0 0 0 2px rgba(46, 204, 113, 0.35);
+  }
+  .pad .label {
+    font-weight: 650;
+    font-size: 0.95rem;
+    line-height: 1.2;
+  }
+  .pad .meta {
+    font-size: 0.7rem;
+    color: var(--muted);
+    word-break: break-all;
+  }
+  .pad.missing {
+    opacity: 0.45;
+    cursor: not-allowed;
+    border-style: dashed;
+  }
+  footer {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+  a { color: var(--gold); }
+</style>
+</head>
+<body>
+  <h1>Botonera SFX · <span>Palandri</span></h1>
+  <p class="sub">Tocá un pad para escuchar el clip. Misma carpeta <code>sfx/</code> que el juego.</p>
+
+  <div class="toolbar">
+    <button type="button" id="btn-stop" class="danger">Parar todo</button>
+    <button type="button" id="btn-seq">Secuencia pala</button>
+    <label class="vol">Vol <input type="range" id="vol" min="0" max="1" step="0.05" value="0.85" /></label>
+  </div>
+
+  <div id="boards"></div>
+
+  <footer>
+    <a href="index.html">← Volver al juego</a>
+    · clips en <code>sfx/</code>
+  </footer>
+
+<script>
+const GROUPS = [
+  {
+    id: "pala",
+    title: "Pala (rebote)",
+    clips: [
+      ["Buenas", "pala_buenas.wav"],
+      ["Noches", "pala_noches.wav"],
+      ["Familia", "pala_familia.wav"],
+      ["Familia B", "pala_familia_b.wav"],
+      ["Buenas noches familia", "pala_buenas_noches_familia.wav"],
+    ],
+  },
+  {
+    id: "ladrillo",
+    title: "Ladrillo",
+    clips: [
+      ["Ja", "ladrillo_ja.wav"],
+      ["Ja ja", "ladrillo_ja_ja.wav"],
+      ["Jaja", "ladrillo_jaja.wav"],
+    ],
+  },
+  {
+    id: "power",
+    title: "Power-up",
+    clips: [
+      ["Gracias", "power_gracias.wav"],
+      ["Gracias B", "power_gracias_b.wav"],
+      ["Por la", "power_por_la.wav"],
+      ["Donación", "power_donacion.wav"],
+    ],
+  },
+  {
+    id: "clear",
+    title: "Clear nivel",
+    clips: [
+      ["Bueno", "clear_bueno.wav"],
+      ["Bueno B", "clear_bueno_b.wav"],
+      ["Bueno C", "clear_bueno_c.wav"],
+      ["Bueno D", "clear_bueno_d.wav"],
+    ],
+  },
+  {
+    id: "muerte",
+    title: "Muerte (placeholder Hasta… — no chauchau)",
+    clips: [
+      ["Hasta", "muerte_hasta.wav"],
+      ["Hasta B", "muerte_hasta_b.wav"],
+    ],
+  },
+];
+
+const boards = document.getElementById("boards");
+const volEl = document.getElementById("vol");
+let current = [];
+
+function volume() {
+  return Number(volEl.value);
+}
+
+function stopAll() {
+  current.forEach((a) => {
+    try { a.pause(); a.currentTime = 0; } catch (_) {}
+  });
+  current = [];
+  document.querySelectorAll(".pad.playing").forEach((el) => el.classList.remove("playing"));
+}
+
+function playFile(file, padEl) {
+  const a = new Audio("sfx/" + file);
+  a.volume = volume();
+  current.push(a);
+  if (padEl) padEl.classList.add("playing");
+  a.addEventListener("ended", () => {
+    if (padEl) padEl.classList.remove("playing");
+    current = current.filter((x) => x !== a);
+  });
+  a.addEventListener("error", () => {
+    if (padEl) {
+      padEl.classList.remove("playing");
+      padEl.classList.add("missing");
+      padEl.querySelector(".meta").textContent = "no carga";
+    }
+  });
+  a.play().catch(() => {});
+  return a;
+}
+
+GROUPS.forEach((g) => {
+  const sec = document.createElement("section");
+  sec.innerHTML = `<h2>${g.title}</h2>`;
+  const grid = document.createElement("div");
+  grid.className = "grid";
+  g.clips.forEach(([label, file]) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "pad";
+    btn.dataset.file = file;
+    btn.innerHTML = `<span class="label">${label}</span><span class="meta">${file.replace(/\.wav$/, "")}</span>`;
+    btn.addEventListener("click", () => {
+      // one-shot: stop others in same pad spam feel optional — keep overlapping OK for board
+      playFile(file, btn);
+    });
+    grid.appendChild(btn);
+  });
+  sec.appendChild(grid);
+  boards.appendChild(sec);
+});
+
+document.getElementById("btn-stop").addEventListener("click", stopAll);
+
+document.getElementById("btn-seq").addEventListener("click", async () => {
+  stopAll();
+  const seq = [
+    "pala_buenas.wav",
+    "pala_noches.wav",
+    "pala_familia.wav",
+  ];
+  for (const file of seq) {
+    const pad = document.querySelector(`.pad[data-file="${file}"]`);
+    const a = playFile(file, pad);
+    await new Promise((r) => a.addEventListener("ended", r, { once: true }));
+  }
+});
+
+volEl.addEventListener("input", () => {
+  current.forEach((a) => { a.volume = volume(); });
+});
+</script>
+</body>
+</html>

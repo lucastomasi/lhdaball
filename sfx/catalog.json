@@ -1,0 +1,43 @@
+{
+  "events": {
+    "pala": [
+      "pala_buenas.wav",
+      "pala_noches.wav",
+      "pala_familia.wav",
+      "pala_familia_b.wav",
+      "pala_buenas_noches_familia.wav"
+    ],
+    "ladrillo": [
+      "ladrillo_ja.wav",
+      "ladrillo_ja_ja.wav",
+      "ladrillo_jaja.wav"
+    ],
+    "power": [
+      "power_gracias.wav",
+      "power_gracias_b.wav",
+      "power_por_la.wav",
+      "power_donacion.wav"
+    ],
+    "muerte": [
+      "muerte_hasta.wav",
+      "muerte_hasta_b.wav"
+    ],
+    "clear": [
+      "clear_bueno.wav",
+      "clear_bueno_b.wav",
+      "clear_bueno_c.wav",
+      "clear_bueno_d.wav"
+    ]
+  },
+  "source": "sfx-src/palandri_gE3vyGUMLhA.m4a + sfx-src/palandri_U8W3549I994.m4a",
+  "notes": {
+    "missing_spoken": [
+      "muerte_chauchau"
+    ],
+    "U8W3549I994": "Opening 'Buenas noches familias' speech starts ~0.63s (energy), not 0.00. Link t=204 is Milei Malvinas/UN speech, not greetings. Outro is 'hasta la próxima' — no spoken chauchau.",
+    "ladrillo_note": "Real laugh bursts @~24:51 (after 'Dios mío'), not spoken ja tokens. Prior clips incorrectly used Ay-Dios / bichereada speech.",
+    "unused_on_disk": "muerte_hasta*.wav are outro 'hasta la próxima' placeholders in catalog (NOT chauchau).",
+    "muerte_note": "chauchau no está; placeholder outro Hasta…",
+    "recut": "2026-09-29: all spoken clips re-cut from sources with ~60ms silence pads, 25ms fades, peak -1dB. Opening timestamps energy-corrected (speech starts ~0.63 not 0.00). ladrillo_* replaced speech-miscuts with real laugh pulses @~1491.5s."
+  }
+}
